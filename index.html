@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+    <div id="app">
+        <div class="form-container">
+            <div class="form-group">
+                <input type="number" placeholder="author_id" v-model="author_id">
+            </div>
+            <div class="form-group">
+                <input type="text" placeholder="title" v-model="title">
+            </div>
+            <div class="form-group">
+                <textarea name="" id=""  rows="5" placeholder="body" v-model="body"></textarea>
+            </div>
+         
+            <div class="form-group" v-if="isAdd">
+               <button @click="createTodo">Add Todo</button>
+               
+            </div>
+            <div class="form-group" v-if="isUpdate">
+                <button @click="updateTodo">Update Todo</button>
+                
+             </div>
+        </div>
+        <section class="container">
+            <div class="card" v-for="todo of todos" v-if="todo.status">
+                <div class="card-title">
+                    <h1>{{todo.title}}</h1>
+                </div>
+                <div class="card-body">
+                    <p>{{todo.description}}</p>
+                </div>
+                <div class="card-body">
+                    <p>{{todo.created_at}}</p>
+                    <br>
+                    <a href="#"   @click= "edit_post(todo)">
+                        <i class="fa fa-pencil fa-lg text-white"></i>
+                    </a>
+                    <a href="#" @click = "deletePost(todo.id)" >
+                       <i class="fa fa-trash fa-lg" ></i>
+                    </a>
+                
+                </div>
+            </div>
+
+        </section>
+        
+    </div>
+    
+</body>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<script>
+//vue 
+new Vue({
+    el:'#app',
+    data:{
+        todos:[],
+        title:'',
+        body:'',
+        author_id: "",
+        isUpdate: false,
+        isAdd: true,
+        id: ""
+
+    },
+   
+
+    methods:{
+        getTodos(){
+            let url='http://100.24.95.78/todos-api/public/api/todos';
+            axios.get(url).then(response => {
+                this.todos = response.data.data;
+            });
+
+        },
+        createTodo(){
+            //console.log(this.title,this.description, this.status, this.user_id)
+            todo=({user_id:parseInt(this.user_id), title:this.title, description:this.description,status:parseInt(this.status)});
+            let url='http://100.24.95.78/todos-api/public/api/todos';
+            axios.post(url,todo).then(response => {
+                this.getTodos();
+               // window.location.reload();
+            })
+            this.author_id = "";
+            this.title = "";
+            this.body ="";
+            
+        },
+        deleteTodo(id) {
+            
+            let id = id;
+            console.log(id)
+            
+            let URL = 'http://100.24.95.78/todos-api/public/api/todos/' + id;
+            
+            axios
+            .delete(URL)
+            .then(res => {
+                
+                //location.href= "http://100.24.95.78/todos-api/public/api/todos"; 
+                //window.location.reload();
+              
+            });
+        },
+
+        edit_Todo(author){
+            this.isAdd= false
+            this.isUpdate = true
+            this.id = author.id;
+            this.Author_id= author.user_id;
+            this.title = author.title;
+            this.body = author.body;
+           
+            
+        },
+        updateTodo(){
+            let URL = 'http://100.24.95.78/todos-api/public/api/todos/' + parseInt(this.id);
+            todo=({user_id:parseInt(this.user_id), title:this.title, body:this.body});
+            axios
+                .put(URL, todo)
+                .then(res => {
+                this.getTodos(); 
+            });
+            this.isUpdate = false;
+            this.isAdd =true;
+
+
+        }
+    },
+    mounted() {
+        this.getTodos();
+    },
+    
+})
+</script>
+</html>
